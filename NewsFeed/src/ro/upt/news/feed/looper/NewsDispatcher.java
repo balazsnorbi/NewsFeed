@@ -6,6 +6,13 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.Queue;
 import java.util.logging.Logger;
 
+import ro.upt.news.feed.actors.NewsEditor;
+import ro.upt.news.feed.actors.NewsReader;
+import ro.upt.news.feed.news.News;
+import ro.upt.news.feed.subscription.AbstractSubscription;
+import ro.upt.news.feed.subscription.EditorSubscription;
+import ro.upt.news.feed.subscription.ReaderSubscription;
+
 public class NewsDispatcher {
 	private final static Logger LOGGER = Logger.getLogger(NewsDispatcher.class.getSimpleName());
 
@@ -19,50 +26,60 @@ public class NewsDispatcher {
 	 * 
 	 * @param newsEvent
 	 */
-	public void postEvent(NewsEvent newsEvent) {
+	public synchronized void postEvent(NewsEvent newsEvent) {
 		eventQueue.add(newsEvent);
 	}
 
 	/**
-	 * Adds a reader with the specified request.
+	 * Add a reader with the specified subscription.
 	 * 
 	 * @param reader
-	 * @param request
+	 * @param subscription
 	 */
-	public void addReader(NewsReader reader, ReaderSubscription request) {
-		LOGGER.info("Reader " + reader.toString() + " is subscribed for " + request.toString());
+	public synchronized void subscribeReader(NewsReader reader, ReaderSubscription subscription) {
+		LOGGER.info("Reader " + reader.toString() + " is subscribed for " + subscription.toString());
 		
 		readers.add(new SimpleEntry<NewsReader, ReaderSubscription>(reader,
-				request));
+				subscription));
 	}
-
-	public void addEditor(NewsEditor editor, EditorSubscription request) {
+	
+	/**
+	 * Add a writer with the specified subscription.
+	 * 
+	 * @param editor
+	 * @param subscription
+	 */
+	public synchronized void subscribeEditor(NewsEditor editor, EditorSubscription subscription) {
+		LOGGER.info("Editor " + editor.toString() + " is subscribed for " + subscription.toString());
+		
 		editors.add(new SimpleEntry<NewsEditor, EditorSubscription>(editor,
-				request));
+				subscription));
 	}
 
 	public void handle() {
 		if (!eventQueue.isEmpty()) {
 			NewsEvent nextEvent = eventQueue.poll();
-			News oneNews = nextEvent.getNews();
+			News news = nextEvent.getNews();
 
 			switch (nextEvent.getType()) {
 			case POST:
-				post(oneNews);
+				post(news);
 				break;
 
 			case UPDATE:
-				update(oneNews);
+				update(news);
 				break;
 
 			case DELETE:
-				delete(oneNews);
+				delete(news);
 				break;
 			}
 		}
 	}
 
-	private void post(News news) {
+	private synchronized void post(News news) {
+		boolean isReaden = false;
+		
 		for (Entry<NewsReader, ReaderSubscription> pair : readers) {
 			ReaderSubscription readerSubscription = pair.getValue();
 
@@ -70,13 +87,24 @@ public class NewsDispatcher {
 				if (checkSubscription(news, readerSubscription)) {
 					// inform the reader about the news
 					NewsReader reader = pair.getKey();
-					//reader.read(news);
+					reader.read(news);
+					
+					isReaden = true;
 				}
+			}
+		}
+		
+		for (Entry<NewsEditor, EditorSubscription> pair : editors) {
+			EditorSubscription editorSubscription = pair.getValue();
+			
+			if (checkSubscription(news, editorSubscription) && isReaden) {
+				// inform the editor that the news had been readen
+				pair.getKey().notice(news);
 			}
 		}
 	}
 
-	private void update(News news) {
+	private synchronized void update(News news) {
 		for (Entry<NewsReader, ReaderSubscription> pair : readers) {
 			ReaderSubscription readerSubscription = pair.getValue();
 
@@ -84,13 +112,13 @@ public class NewsDispatcher {
 				if (checkSubscription(news, readerSubscription)) {
 					// inform the reader about the news
 					NewsReader reader = pair.getKey();
-					//reader.read(news);
+					reader.read(news);
 				}
 			}
 		}
 	}
 
-	private void delete(News news) {
+	private synchronized void delete(News news) {
 		for (Entry<NewsReader, ReaderSubscription> pair : readers) {
 			ReaderSubscription readerSubscription = pair.getValue();
 
@@ -104,7 +132,7 @@ public class NewsDispatcher {
 		}
 	}
 	
-	private boolean checkSubscription(News news, ReaderSubscription readerSubscription) {
+	private boolean checkSubscription(News news, AbstractSubscription readerSubscription) {
 		String newsDomain = news.getDomain();
 		String newsSubdomain = news.getSubdomain();
 		
@@ -128,5 +156,18 @@ public class NewsDispatcher {
 			}
 		}
 		return false;
+	}
+	
+	public int getReadersCount(EditorSubscription editorSubscription) {
+		int readersCount = 0;
+		
+		for (Entry<NewsReader, ReaderSubscription> pair : readers) {
+			ReaderSubscription readerSubscription = pair.getValue();
+			
+			if (readerSubscription.equals(editorSubscription)) {
+				++readersCount;
+			}
+		}
+		return readersCount;
 	}
 }

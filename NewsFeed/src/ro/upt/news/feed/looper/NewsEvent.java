@@ -1,7 +1,9 @@
 package ro.upt.news.feed.looper;
 
+import ro.upt.news.feed.news.News;
+
 public class NewsEvent {
-	private final News oneNews;
+	private final News news;
 	private final EventType type;
 	
 	
@@ -9,13 +11,13 @@ public class NewsEvent {
 		POST, UPDATE, DELETE;
 	}
 	
-	public NewsEvent(News oneNews, EventType type) {
-		this.oneNews = oneNews;
+	public NewsEvent(News news, EventType type) {
+		this.news = news;
 		this.type = type;
 	}
 	
 	public News getNews() {
-		return oneNews;
+		return news;
 	}
 	
 	public EventType getType() {
