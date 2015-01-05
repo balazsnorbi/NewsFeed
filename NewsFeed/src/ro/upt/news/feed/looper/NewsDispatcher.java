@@ -14,7 +14,8 @@ import ro.upt.news.feed.subscription.EditorSubscription;
 import ro.upt.news.feed.subscription.ReaderSubscription;
 
 public class NewsDispatcher {
-	private final static Logger LOGGER = Logger.getLogger(NewsDispatcher.class.getSimpleName());
+	private final static Logger LOGGER = Logger.getLogger(NewsDispatcher.class
+			.getSimpleName());
 
 	LinkedList<Entry<NewsReader, ReaderSubscription>> readers = new LinkedList<Entry<NewsReader, ReaderSubscription>>();
 	LinkedList<Entry<NewsEditor, EditorSubscription>> editors = new LinkedList<Entry<NewsEditor, EditorSubscription>>();
@@ -36,22 +37,26 @@ public class NewsDispatcher {
 	 * @param reader
 	 * @param subscription
 	 */
-	public synchronized void subscribeReader(NewsReader reader, ReaderSubscription subscription) {
-		LOGGER.info("Reader " + reader.toString() + " is subscribed for " + subscription.toString());
-		
+	public synchronized void subscribeReader(NewsReader reader,
+			ReaderSubscription subscription) {
+		LOGGER.info("Reader " + reader.toString() + " is subscribed for "
+				+ subscription.toString());
+
 		readers.add(new SimpleEntry<NewsReader, ReaderSubscription>(reader,
 				subscription));
 	}
-	
+
 	/**
 	 * Add a writer with the specified subscription.
 	 * 
 	 * @param editor
 	 * @param subscription
 	 */
-	public synchronized void subscribeEditor(NewsEditor editor, EditorSubscription subscription) {
-		LOGGER.info("Editor " + editor.toString() + " is subscribed for " + subscription.toString());
-		
+	public synchronized void subscribeEditor(NewsEditor editor,
+			EditorSubscription subscription) {
+		LOGGER.info("Editor " + editor.toString() + " is subscribed for "
+				+ subscription.toString());
+
 		editors.add(new SimpleEntry<NewsEditor, EditorSubscription>(editor,
 				subscription));
 	}
@@ -79,7 +84,7 @@ public class NewsDispatcher {
 
 	private synchronized void post(News news) {
 		boolean isReaden = false;
-		
+
 		for (Entry<NewsReader, ReaderSubscription> pair : readers) {
 			ReaderSubscription readerSubscription = pair.getValue();
 
@@ -88,15 +93,15 @@ public class NewsDispatcher {
 					// inform the reader about the news
 					NewsReader reader = pair.getKey();
 					reader.read("POST: " + news.getBody());
-					
+
 					isReaden = true;
 				}
 			}
 		}
-		
+
 		for (Entry<NewsEditor, EditorSubscription> pair : editors) {
 			EditorSubscription editorSubscription = pair.getValue();
-			
+
 			if (checkSubscription(news, editorSubscription) && isReaden) {
 				// inform the editor about the published news
 				pair.getKey().notice(news);
@@ -131,11 +136,12 @@ public class NewsDispatcher {
 			}
 		}
 	}
-	
-	private boolean checkSubscription(News news, AbstractSubscription readerSubscription) {
+
+	private boolean checkSubscription(News news,
+			AbstractSubscription readerSubscription) {
 		String newsDomain = news.getDomain();
 		String newsSubdomain = news.getSubdomain();
-		
+
 		String subscriptionDomain = readerSubscription.getDomain();
 		if (subscriptionDomain != null) {
 			if (subscriptionDomain.isEmpty()) {
@@ -147,9 +153,13 @@ public class NewsDispatcher {
 				if (subscriptionSubdomain != null) {
 					if (subscriptionSubdomain.isEmpty()) {
 						return true;
-					} else if (subscriptionSubdomain
-							.equals(newsSubdomain)) {
-						// TODO: check also the attributes
+					} else if (subscriptionSubdomain.equals(newsSubdomain)) {
+						if (news.getAttributes() != null) {
+							if (news.getAttributes().equals(
+								readerSubscription.getAttributes())) {
+								return true;
+							}
+						}
 						return true;
 					}
 				}
@@ -157,13 +167,13 @@ public class NewsDispatcher {
 		}
 		return false;
 	}
-	
+
 	public int getReadersCount(EditorSubscription editorSubscription) {
 		int readersCount = 0;
-		
+
 		for (Entry<NewsReader, ReaderSubscription> pair : readers) {
 			ReaderSubscription readerSubscription = pair.getValue();
-			
+
 			if (readerSubscription.equals(editorSubscription)) {
 				++readersCount;
 			}

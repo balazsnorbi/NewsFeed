@@ -20,21 +20,29 @@ public class WritersThread extends Thread {
 
 	public void run() {
 		while (!Thread.currentThread().isInterrupted()) {
-
-			News sportsNews = new News(
-					"Real Madrid stops at 22 victories tonight, "
-							+ formatter
-									.format(Calendar.getInstance().getTime()),
-					"Sports", "Football", null);
-			
-			NewsEditor sportsEditor = new NewsEditor();
-			sportsEditor.postNews(sportsNews, dispatcher);
-			
-			//register a listener to see if news were readen
-			dispatcher.subscribeEditor(sportsEditor, new EditorSubscription("Sports", "Football", null));
-			
 			try {
+				News sportsNews = new News(
+						"Real Madrid stops at 22 victories tonight, "
+								+ formatter.format(Calendar.getInstance()
+										.getTime()), "Sports", "Football", null);
+				NewsEditor sportsEditor = new NewsEditor("SportsEditor1");
+				sportsEditor.postNews(sportsNews, dispatcher);
+
+				// register a listener to see if news were readen
+				// dispatcher.subscribeEditor(sportsEditor, new
+				// EditorSubscription("Sports", "Football", null));
 				sleep(2000);
+				
+				News socialNews = new News(
+						"Facebook, blah blah "
+								+ formatter.format(Calendar.getInstance()
+										.getTime()), "Social", "", null);
+				NewsEditor socialEditor = new NewsEditor("SocialEditor1");
+				socialEditor.postNews(socialNews, dispatcher);
+				
+				sleep(2000);
+				
+				
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
