@@ -87,7 +87,7 @@ public class NewsDispatcher {
 				if (checkSubscription(news, readerSubscription)) {
 					// inform the reader about the news
 					NewsReader reader = pair.getKey();
-					reader.read(news);
+					reader.read("POST: " + news.getBody());
 					
 					isReaden = true;
 				}
@@ -98,7 +98,7 @@ public class NewsDispatcher {
 			EditorSubscription editorSubscription = pair.getValue();
 			
 			if (checkSubscription(news, editorSubscription) && isReaden) {
-				// inform the editor that the news had been readen
+				// inform the editor about the published news
 				pair.getKey().notice(news);
 			}
 		}
@@ -112,7 +112,7 @@ public class NewsDispatcher {
 				if (checkSubscription(news, readerSubscription)) {
 					// inform the reader about the news
 					NewsReader reader = pair.getKey();
-					reader.read(news);
+					reader.read("UPDATE: " + news.getBody());
 				}
 			}
 		}
@@ -126,7 +126,7 @@ public class NewsDispatcher {
 				if (checkSubscription(news, readerSubscription)) {
 					// inform the reader about the news
 					NewsReader reader = pair.getKey();
-					//reader.read(news);
+					reader.read("DELETED: " + news.getBody());
 				}
 			}
 		}

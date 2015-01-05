@@ -11,4 +11,16 @@ public class ReaderSubscription extends AbstractSubscription {
 	public ReaderSubscription (String domain, String subdomain, Attributes attributes) {
 		super (domain, subdomain, attributes);
 	}
+	
+	 @Override
+	public boolean equals(Object obj) {
+		if (obj instanceof AbstractSubscription) {
+			AbstractSubscription subs = (AbstractSubscription) obj;
+			
+			if(getDomain().equals(subs.getDomain()) && getSubdomain().equals(subs.getSubdomain())) {
+				return true;
+			}
+		}
+		return false;
+	}
 }
