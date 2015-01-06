@@ -27,7 +27,7 @@ public class NewsDispatcher {
 	 * 
 	 * @param newsEvent
 	 */
-	public synchronized void postEvent(NewsEvent newsEvent) {
+	public synchronized void addEvent(NewsEvent newsEvent) {
 		eventQueue.add(newsEvent);
 	}
 

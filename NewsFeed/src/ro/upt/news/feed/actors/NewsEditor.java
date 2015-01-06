@@ -23,6 +23,18 @@ public class NewsEditor {
 	public void postNews(News news, NewsDispatcher dispatcher) {
 		NewsEvent event = new NewsEvent(news, EventType.POST);
 		
-		dispatcher.postEvent(event);
+		dispatcher.addEvent(event);
+	}
+	
+	public void updateNews(News news, NewsDispatcher dispatcher){
+		NewsEvent event = new NewsEvent(news, EventType.UPDATE);
+		
+		dispatcher.addEvent(event);
+	}
+	
+	public void deleteNews(News news, NewsDispatcher dispatcher){
+		NewsEvent event = new NewsEvent(news, EventType.DELETE);
+		
+		dispatcher.addEvent(event);
 	}
 }

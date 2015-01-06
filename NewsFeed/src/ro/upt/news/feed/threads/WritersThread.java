@@ -40,6 +40,14 @@ public class WritersThread extends Thread {
 				NewsEditor socialEditor = new NewsEditor("SocialEditor1");
 				socialEditor.postNews(socialNews, dispatcher);
 				
+				sleep(4000);
+				
+				sportsEditor.updateNews(sportsNews, dispatcher);
+				
+				sleep(3000);
+				
+				sportsEditor.deleteNews(socialNews, dispatcher);
+				
 				sleep(2000);
 				
 				
